@@ -7,7 +7,7 @@
 
 0. 运行本程序（会自动启动 Chromium 浏览器)
 
-1. 打开 [雅昌艺术拼拍卖网](https://auction.artron.net/)
+1. 打开 [雅昌艺术品拍卖网](https://auction.artron.net/)
 
 2. 进入【得藏会员精览高清大图】页面（需购买会员资格），点击页面内右上角的按钮。
 

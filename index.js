@@ -89,7 +89,7 @@ const process = require('process');
 			await page.$eval('body', injectFuncTemplate.replace('<<artCode>>', artCode));
 		});
 
-		// 通过监控 console 来接收页面发出的“下载完成”通知
+		// 通过监控 console 来接收页面发出的 "下载完成" 通知
 		page.on('console', async function(msg) {
 			if (msg.text() == '下载完成') {
 				// 获取 title 并剔除作为文件名可能包含的非法字符  \/:*?"<>|
@@ -122,13 +122,13 @@ const process = require('process');
 			// 去掉启动时显示的【Chromium 不是您的默认浏览器】
 			'--no-default-browser-check',
 
-			// 缺省打开的网页
+			// 启动时自动打开的网页
 			'-url', 'https://auction.artron.net/'
 		],
 
 		// 缺省的启动参数都在 node_modules\puppeteer\lib\cjs\puppeteer\node\Launcher.js 里面
 		ignoreDefaultArgs: [
-			// 去掉启动时显示的【Chrome 正受到自动测试软件的控制】
+			// 去掉启动时显示的【Chrome 正受到自动测试软件的控制。】
 			'--enable-automation',
 
 			// 去掉启动时显示的【您使用的是不受支持的命令行标记...】
