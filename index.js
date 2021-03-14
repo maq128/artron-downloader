@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const process = require('process');
 
 (async () => {
 	let injectFuncTemplate = `
@@ -110,18 +111,36 @@ const puppeteer = require('puppeteer');
 		});
 	};
 
+	// 去掉启动时显示的【缺少 Google API 密钥，因此 Chromium 的部分功能将无法使用。】
+	process.env.GOOGLE_API_KEY = 'no';
+	process.env.GOOGLE_DEFAULT_CLIENT_ID = 'no';
+	process.env.GOOGLE_DEFAULT_CLIENT_SECRET = 'no';
+
 	const browser = await puppeteer.launch({
 		headless: false,
 		defaultViewport: null,
 		userDataDir: 'UserData',
 		executablePath: 'chromium\\chrome.exe',
-		ignoreDefaultArgs: ['--enable-automation'],
+
+		args: [
+			// 去掉启动时显示的【Chromium 不是您的默认浏览器】
+			'--no-default-browser-check',
+
+			// 缺省打开的网页
+			'-url', 'https://auction.artron.net/'
+		],
+
+		// 缺省的启动参数都在 node_modules\puppeteer\lib\cjs\puppeteer\node\Launcher.js 里面
+		ignoreDefaultArgs: [
+			// 去掉启动时显示的【Chrome 正受到自动测试软件的控制】
+			'--enable-automation',
+
+			// 去掉启动时显示的【您使用的是不受支持的命令行标记...】
+			'--enable-blink-features=IdleDetection',
+		],
 	});
 	browser.on('targetcreated', crackPage);
 	browser.on('targetchanged', crackPage);
-
-	const page = await browser.newPage();
-	await page.goto('https://auction.artron.net/');
 
 	// await browser.disconnect();
 })();
