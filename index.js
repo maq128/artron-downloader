@@ -8,75 +8,71 @@ const process = require('process');
 	var body = document.body;
 
 	var bigpic = document.querySelector('#ad-bigpic');
-	if (bigpic) {
-		return 'bigpic';
-	}
+	if (bigpic) return;
 
 	var btn = document.querySelector('#ad-btn');
-	if (!btn) {
-		btn = document.createElement('button');
-		btn.id = 'ad-btn';
-		btn.style.position = 'absolute';
-		btn.style.right = '0.5em';
-		btn.style.top = '0.5em';
-		btn.style.cursor = 'pointer';
-		btn.innerText = '下载完整高清大图';
-		body.appendChild(btn);
-		btn.addEventListener('click', function() {
-			var loadImages = function(artCode, data) {
-				document.oncontextmenu = null;
-				$(document.body).empty();
-				var container = $('<div></div>').appendTo($(document.body));
-				container.attr('id', 'ad-bigpic').css({
-					width: data.w,
-					height: data.h,
-					position: 'relative',
-				});
+	if (btn) return;
 
-				var tasks = [];
-				for (var j=0; j * 256 < data.h; j++) {
-					for (var i=0; i * 256 < data.w; i++) {
-						tasks.push(new Promise(function(resolve, reject) {
-							$('<img/>')
-								.appendTo(container)
-								.attr('src', 'https://hd-images.artron.net/auction/images/' + artCode + '/12/' + i + '_' + j + '.jpg')
-								.css({
-									position: 'absolute',
-									left: i * 256,
-									top: j * 256,
-								})
-								.on('load', resolve)
-								.on('error', reject);
-						}));
-					}
-				}
-				Promise.all(tasks).then(function() {
-					// 通知 puppeteer
-					console.log('下载完成');
-				}).catch(function() {
-					alert('出错了！无法下载大图的某些局部内容。')
-				});
-			};
-
-			// 获取大图信息
-			$.ajax({
-				url: 'https://hd-images.artron.net/auction/getImageOption',
-				dataType: "jsonp",
-				jsonp: "callback",
-				data: {artCode: artCode},
-				success: function(resp) {
-					if (!resp.data) {
-						alert('出错了！无法获得大图信息。')
-						return;
-					}
-					// 加载所有碎片
-					loadImages(artCode, resp.data);
-				}
+	btn = document.createElement('button');
+	body.appendChild(btn);
+	btn.id = 'ad-btn';
+	btn.style.position = 'absolute';
+	btn.style.right = '0.5em';
+	btn.style.top = '0.5em';
+	btn.style.cursor = 'pointer';
+	btn.innerText = '下载完整高清大图';
+	btn.addEventListener('click', function() {
+		var loadImages = function(artCode, data) {
+			document.oncontextmenu = null;
+			$(document.body).empty();
+			bigpic = $('<div></div>').appendTo($(document.body));
+			bigpic.attr('id', 'ad-bigpic').css({
+				width: data.w,
+				height: data.h,
+				position: 'relative',
 			});
+
+			var tasks = [];
+			for (var j=0; j * 256 < data.h; j++) {
+				for (var i=0; i * 256 < data.w; i++) {
+					tasks.push(new Promise(function(resolve, reject) {
+						$('<img/>')
+							.appendTo(bigpic)
+							.attr('src', 'https://hd-images.artron.net/auction/images/' + artCode + '/12/' + i + '_' + j + '.jpg')
+							.css({
+								position: 'absolute',
+								left: i * 256,
+								top: j * 256,
+							})
+							.on('load', resolve)
+							.on('error', reject);
+					}));
+				}
+			}
+			Promise.all(tasks).then(function() {
+				// 通知 puppeteer
+				console.log('下载完成');
+			}).catch(function() {
+				alert('出错了！无法下载大图的某些局部内容。')
+			});
+		};
+
+		// 获取大图信息
+		$.ajax({
+			url: 'https://hd-images.artron.net/auction/getImageOption',
+			dataType: "jsonp",
+			jsonp: "callback",
+			data: {artCode: artCode},
+			success: function(resp) {
+				if (!resp.data) {
+					alert('出错了！无法获得大图信息。')
+					return;
+				}
+				// 加载所有碎片
+				loadImages(artCode, resp.data);
+			}
 		});
-		return 'btn';
-	}
-	return 'none';
+	});
 })()`;
 
 	let crackPage = async function(target) {
