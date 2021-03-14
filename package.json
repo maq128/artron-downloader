@@ -1,0 +1,12 @@
+{
+	"name": "artron-downloader",
+	"dependencies": {
+		"puppeteer": "^8.0.0"
+	},
+	"bin": "index.js",
+	"pkg": {
+		"targets": [
+			"node10"
+		]
+	}
+}
