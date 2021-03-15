@@ -13,6 +13,7 @@ const process = require('process');
 	var btn = document.querySelector('#ad-btn');
 	if (btn) return;
 
+	document.oncontextmenu = null;
 	btn = document.createElement('button');
 	body.appendChild(btn);
 	btn.id = 'ad-btn';
@@ -23,7 +24,6 @@ const process = require('process');
 	btn.innerText = '下载完整高清大图';
 	btn.addEventListener('click', function() {
 		var loadImages = function(artCode, data) {
-			document.oncontextmenu = null;
 			$(document.body).empty();
 			bigpic = $('<div></div>').appendTo($(document.body));
 			bigpic.attr('id', 'ad-bigpic').css({

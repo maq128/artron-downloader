@@ -1,5 +1,6 @@
 // 相比于 index.js，这个 adv.js 增强了一个功能。
 // 在【精览高清大图】页面的 js 代码里有一个 imageData 变量，可以据此列示出相关的作品。
+//
 // imageData: [{
 //	ArtCode: "art5182320149"
 //	FileName: "art5182320149.jpg"
@@ -36,20 +37,6 @@ const process = require('process');
 (async () => {
 	let injectFuncTemplate = `
 (function() {
-	var ids = imageData.map(d => d.ArtCode);
-	console.log(ids);
-	$.post({
-		url: '/ajaxdata/getartinfo.php',
-		dataType: 'json',
-		data: {artCode: ids[0]},
-		success: function(resp) {
-			console.log('resp:', resp);
-		}
-	});
-})()`;
-
-	let _injectFuncTemplate = `
-(function() {
 	var artCode = '<<artCode>>';
 	var body = document.body;
 
@@ -59,6 +46,7 @@ const process = require('process');
 	var btn = document.querySelector('#ad-btn');
 	if (btn) return;
 
+	document.oncontextmenu = null;
 	btn = document.createElement('button');
 	body.appendChild(btn);
 	btn.id = 'ad-btn';
@@ -69,7 +57,6 @@ const process = require('process');
 	btn.innerText = '下载完整高清大图';
 	btn.addEventListener('click', function() {
 		var loadImages = function(artCode, data) {
-			document.oncontextmenu = null;
 			$(document.body).empty();
 			bigpic = $('<div></div>').appendTo($(document.body));
 			bigpic.attr('id', 'ad-bigpic').css({
@@ -118,6 +105,86 @@ const process = require('process');
 				loadImages(artCode, resp.data);
 			}
 		});
+	});
+
+	btn = document.createElement('button');
+	body.appendChild(btn);
+	btn.style.position = 'absolute';
+	btn.style.right = '0.5em';
+	btn.style.top = '2.5em';
+	btn.style.cursor = 'pointer';
+	btn.innerText = '浏览相关作品';
+	btn.addEventListener('click', function() {
+		$(document.body).empty();
+		var browse = $('<div></div>').appendTo($(document.body))
+			.attr('id', 'ad-bigpic')
+			.css({position: 'relative'})
+			.on('click', '.ad-frame', function(evt) {
+				var url = $(evt.currentTarget).attr('data-url');
+				window.open(url);
+			})
+			.on('mouseenter', '.ad-frame', function(evt) {
+				var info = $(evt.currentTarget).children('.info').show();
+				if (info.length > 0) return;
+				var artCode = $(evt.currentTarget).attr('data-code');
+				info = $('<div></div>').appendTo($(evt.currentTarget))
+					.addClass('info')
+					.css({
+						position: 'absolute',
+						left: 0,
+						top: 0,
+						width: 200,
+						fontSize: '10pt',
+						textAlign: 'left',
+						lineHeight: '1.3em',
+						backgroundColor: 'rgba(0,0,0,0.6)',
+					})
+					.text('...');
+				$.post('/ajaxdata/getartinfo.php', {ArtCode:artCode}, data => {
+					info.empty();
+					data.worksName     && $('<p></p>').text(data.worksName).appendTo(info);
+					data.size          && $('<p></p>').text(data.size).appendTo(info);
+					data.estimateprice && $('<p></p>').text(data.estimateprice).appendTo(info);
+					data.creatdate     && $('<p></p>').text(data.creatdate).appendTo(info);
+				}, 'json');
+			})
+			.on('mouseleave', '.ad-frame', function(evt) {
+				$(evt.currentTarget).children('.info').hide();
+			});
+
+		imageData.forEach(d => {
+			var imageUrl = d.Folder + d.FileName;
+			var frame = $('<div></div>').appendTo(browse)
+				.addClass('ad-frame')
+				.css({
+					float: 'left',
+					position: 'relative',
+					width: 200,
+					height: 200,
+					textAlign: 'center',
+					border: '1px solid gray',
+					margin: 1,
+					cursor: 'pointer',
+				})
+				.attr('data-url', imageUrl)
+				.attr('data-code', d.ArtCode);
+
+			$('<span></span>').appendTo(frame)
+				.css({
+					display: 'inline-block',
+					height: '100%',
+					verticalAlign: 'middle',
+				});
+
+			$('<img>').appendTo(frame)
+				.attr('src', imageUrl)
+				.css({
+					maxWidth: 200,
+					maxHeight: 200,
+					verticalAlign: 'middle',
+				});
+		});
+		$('<div></div>').appendTo(browse).css({clear: 'both'});
 	});
 })()`;
 
