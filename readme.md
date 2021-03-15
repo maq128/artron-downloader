@@ -17,17 +17,31 @@
 ```cmd
 npm install
 xcopy /S /I node_modules\puppeteer\.local-chromium\win64-856583\chrome-win .\chromium
+
 node index.js
+# 或者
+node adv.js
 ```
 
 
 # 打包成 .exe
 
+安装 `pkg` 打包工具：
 ```cmd
 npm install -g pkg
+```
+
+基于 `package.json` 的配置信息进行打包：
+```cmd
 pkg .
 ```
-打包生成的 `artron-downloader.exe` 运行的时候需要同目录下存在 `chromium` 目录。
+
+直接用命令行参数进行打包：
+```cmd
+pkg -t node10 adv.js -o artron-downloader-adv.exe
+```
+
+**NOTE:** 打包生成的 `.exe` 可执行程序文件在运行的时候需要同目录下存在 `chromium` 目录。
 
 
 # 参考资料
