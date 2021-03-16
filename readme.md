@@ -33,15 +33,17 @@ npm install -g pkg
 
 基于 `package.json` 的配置信息进行打包：
 ```cmd
-pkg .
+pkg --out-path=dist .
 ```
 
-直接用命令行参数进行打包：
+也可以直接用命令行参数进行打包：
 ```cmd
-pkg -t node10 adv.js -o artron-downloader-adv.exe
+pkg --targets=node10 --output=artron-downloader.exe index.js
 ```
 
-**NOTE:** 打包生成的 `.exe` 可执行程序文件在运行的时候需要同目录下存在 `chromium` 目录。
+**NOTE:** 打包生成的 `.exe` 可执行程序文件在运行的时候需要同目录下存在必要的运行时文件：
+- `chromium` 文件夹
+- `js` 文件夹
 
 
 # 参考资料
