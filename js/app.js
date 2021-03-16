@@ -1,103 +1,28 @@
-const puppeteer = require('D:\\snapshot\\artron-downloader\\node_modules\\puppeteer');
-// const puppeteer = require('puppeteer');
 const process = require('process');
+const path = require('path');
+const fs = require('fs');
+const puppeteer = require(path.join(path.dirname(require.main.filename), 'node_modules\\puppeteer'));
 
-// 网页中加载的 jQuery 版本为 1.6
-let injectFunction = `
-async function injectFunction() {
-	if ($('.ad-inject').length > 0) return;
-
-	$('<button></button>').appendTo($('.imgShow'))
-		.addClass('ad-inject')
-		.css({
-			position: 'absolute',
-			left: 530,
-			top: '-2em',
-			cursor: 'pointer',
-		})
-		.text('打开半高清大图')
-		.click(() => {
-			window.open($('#smallPic').attr('src'));
-		});
-
-	// 不支持【精览高清大图】
-	if ($('.enterHD').length == 0) return;
-
-	$('<button></button>').appendTo($('.imgShow'))
-		.addClass('ad-inject')
-		.css({
-			position: 'absolute',
-			left: 400,
-			top: '-2em',
-			cursor: 'pointer',
-		})
-		.text('下载完整高清大图')
-		.click(() => {
-			var loadImages = function(data) {
-				$(document.body).empty();
-				var bigpic = $('<div></div>').appendTo($(document.body))
-					.addClass('ad-inject ad-bigpic')
-					.css({
-						width: data.w,
-						height: data.h,
-						position: 'relative',
-					});
-
-				var tasks = [];
-				for (var j=0; j * 256 < data.h; j++) {
-					for (var i=0; i * 256 < data.w; i++) {
-						tasks.push(new Promise(function(resolve, reject) {
-							$('<img/>').appendTo(bigpic)
-								.attr('src', 'https://hd-images.artron.net/auction/images/' + ArtWorkId + '/12/' + i + '_' + j + '.jpg')
-								.css({
-									position: 'absolute',
-									left: i * 256,
-									top: j * 256,
-								})
-								.load(resolve)
-								.error(reject);
-						}));
-					}
-				}
-				Promise.all(tasks).then(function() {
-					// 通知 puppeteer
-					console.log('下载完成');
-				}).catch(function() {
-					alert('出错了！无法下载大图的某些局部内容。')
-				});
-			};
-
-			// 获取大图信息
-			$.ajax({
-				url: 'https://hd-images.artron.net/auction/getImageOption',
-				dataType: "jsonp",
-				jsonp: "callback",
-				data: {artCode: ArtWorkId},
-				success: function(resp) {
-					if (!resp.data) {
-						alert('出错了！无法获得大图信息。')
-						return;
-					}
-					// 加载所有碎片
-					loadImages(resp.data);
-				}
-			});
-		});
-}
-setTimeout(injectFunction, 0);
-`;
-
-async function crackPage(target) {
-	// 只关注【查看详情】页面
+async function onTargetCreated(target) {
+	// 只关注 page 类型的 target
 	if (target.type() != 'page') return;
-	let url = target.url();
-	let m = url.match(/https\:\/\/auction\.artron\.net\/paimai-(.*)\//);
-	if (!m || m.length != 2) return;
 	let page = await target.page();
 
-	// 页面加载完成时在其中注入一段代码
+	// 监听该页签的 load 事件
+	// Note: 当该页签导航到其它 url 的时候，监听仍然有效
 	page.on('load', async function() {
-		await page.$eval('body', injectFunction);
+		// 只关注【拍品详情】页面
+		let url = page.url();
+		let m = url.match(/https\:\/\/auction\.artron\.net\/paimai-(.*)\//);
+		if (!m || m.length != 2) return;
+
+		// 在页面中注入一段代码
+		var injectJsFile = path.join(path.dirname(process.execPath), 'js\\inject.js');
+		if (process.execPath.endsWith('node.exe')) { // 如果是在开发调试环境运行
+			injectJsFile = path.join(path.dirname(require.main.filename), 'js\\inject.js');
+		}
+		var injectJs = fs.readFileSync(injectJsFile, 'utf-8');
+		await page.evaluate(injectJs);
 	});
 
 	// 通过监控 console 来接收页面发出的 "下载完成" 通知
@@ -115,8 +40,8 @@ async function crackPage(target) {
 			await bigpic.screenshot({path: filename});
 			console.log('下载完成: ' + filename);
 
-			// 在网页内弹框提示
-			await page.$eval('body', `alert('下载完成！\\n\\n` + filename + `')`);
+			// 在网页内弹框提示，然后刷新恢复
+			await page.evaluate(`alert('下载完成！\\n\\n` + filename + `');window.location.reload()`);
 		}
 	});
 };
@@ -150,8 +75,11 @@ async function crackPage(target) {
 			'--enable-blink-features=IdleDetection',
 		],
 	});
-	browser.on('targetcreated', crackPage);
-	browser.on('targetchanged', crackPage);
 
-	// await browser.disconnect();
+	// 对已经打开的页面进行拦截处理
+	let targets = await browser.targets();
+	targets.forEach(onTargetCreated);
+
+	// 对将来打开的页面进行拦截处理
+	browser.on('targetcreated', onTargetCreated);
 })();

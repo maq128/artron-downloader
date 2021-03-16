@@ -9,7 +9,7 @@
 
 1. 打开 [雅昌艺术品拍卖网](https://auction.artron.net/)
 
-2. 进入【得藏会员精览高清大图】页面（需购买会员资格），点击页面内右上角的按钮。
+2. 进入【拍品详情】页面的时候，页面中会出现相应的功能按钮。
 
 
 # 开发环境
@@ -19,8 +19,6 @@ npm install
 xcopy /S /I node_modules\puppeteer\.local-chromium\win64-856583\chrome-win .\chromium
 
 node index.js
-# 或者
-node adv.js
 ```
 
 
@@ -33,12 +31,7 @@ npm install -g pkg
 
 基于 `package.json` 的配置信息进行打包：
 ```cmd
-pkg --out-path=dist .
-```
-
-也可以直接用命令行参数进行打包：
-```cmd
-pkg --targets=node10 --output=artron-downloader.exe index.js
+pkg .
 ```
 
 **NOTE:** 打包生成的 `.exe` 可执行程序文件在运行的时候需要同目录下存在必要的运行时文件：
