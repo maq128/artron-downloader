@@ -17,8 +17,10 @@ async function onTargetCreated(target) {
 		if (!m || m.length != 2) return;
 
 		// 在页面中注入一段代码
+		// 如果是以打包 exe 程序的方式运行，则以 exe 文件的位置来找到 inject.js
 		var injectJsFile = path.join(path.dirname(process.execPath), 'js\\inject.js');
-		if (process.execPath.endsWith('node.exe')) { // 如果是在开发调试环境运行
+		if (process.execPath.endsWith('node.exe')) {
+			// 如果是在开发调试环境运行，则以入口文件 index.js 的位置来找到 inject.js
 			injectJsFile = path.join(path.dirname(require.main.filename), 'js\\inject.js');
 		}
 		var injectJs = fs.readFileSync(injectJsFile, 'utf-8');
