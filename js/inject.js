@@ -12,12 +12,13 @@ function injectButtons() {
 		})
 		.text('下载完整高清大图');
 
-	if ($('.enterHD').length == 0) {
-		// 如果该拍品没有高清大图
-		btn.attr('disabled', 'true');
-	} else {
-		// 如果该拍品有高清大图
+	var href = $('.enterHD').attr('href');
+	if (href && href.indexOf('showbigpic') >= 0) {
+		// 该拍品有高清大图
 		btn.click(onButtonBigpic);
+	} else {
+		// 该拍品没有高清大图，或者当前没有登录
+		btn.attr('disabled', 'true');
 	}
 
 	// 注入【打开半高清大图】功能按钮
