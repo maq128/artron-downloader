@@ -44,8 +44,8 @@ function onButtonBigpic() {
 		jsonp: "callback",
 		data: {artCode: ArtWorkId},
 		success: function(resp) {
-			if (!resp.data) {
-				alert('出错了！无法获得大图信息。')
+			if (resp.code != 0) {
+				alert(resp.msg);
 				return;
 			}
 			// 加载所有碎片

@@ -1,11 +1,13 @@
 const process = require('process');
 const path = require('path');
 const fs = require('fs');
-const puppeteer = require(path.join(path.dirname(require.main.filename), 'node_modules\\puppeteer'));
+const puppeteer = require(path.join(process.env.APP_NODE_MODULES, 'puppeteer'));
 
 async function onTargetCreated(target) {
 	// 只关注 page 类型的 target
 	if (target.type() != 'page') return;
+
+	// page 实际上代表的是“页签”，而不是“网页”
 	let page = await target.page();
 
 	// 监听该页签的 load 事件
@@ -17,12 +19,7 @@ async function onTargetCreated(target) {
 		if (!m || m.length != 2) return;
 
 		// 在页面中注入一段代码
-		// 如果是以打包 exe 程序的方式运行，则以 exe 文件的位置来找到 inject.js
-		var injectJsFile = path.join(path.dirname(process.execPath), 'js\\inject.js');
-		if (process.execPath.endsWith('node.exe')) {
-			// 如果是在开发调试环境运行，则以入口文件 index.js 的位置来找到 inject.js
-			injectJsFile = path.join(path.dirname(require.main.filename), 'js\\inject.js');
-		}
+		var injectJsFile = path.join(__dirname, 'inject.js');
 		var injectJs = fs.readFileSync(injectJsFile, 'utf-8');
 		await page.evaluate(injectJs);
 	});
@@ -78,10 +75,10 @@ async function onTargetCreated(target) {
 		],
 	});
 
-	// 对已经打开的页面进行拦截处理
+	// 对已经打开的页签进行拦截处理
 	let targets = await browser.targets();
 	targets.forEach(onTargetCreated);
 
-	// 对将来打开的页面进行拦截处理
+	// 对将来打开的页签进行拦截处理
 	browser.on('targetcreated', onTargetCreated);
 })();
