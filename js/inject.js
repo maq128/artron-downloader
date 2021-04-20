@@ -55,6 +55,10 @@ function onButtonBigpic() {
 }
 
 function loadBigpic(data) {
+	// 页面卷滚条复位到初始位置，否则有可能导致最终得到的图片缺失部分内容
+	window.scrollTo(0,0);
+
+	// 清空页面，再用碎片拼出高清大图
 	$(document.body).empty();
 	var bigpic = $('<div></div>').appendTo($(document.body))
 		.addClass('ad-bigpic')
