@@ -15,7 +15,7 @@ async function onTargetCreated(target) {
 	page.on('load', async function() {
 		// 只关注【拍品详情】页面
 		let url = page.url();
-		let m = url.match(/https\:\/\/auction\.artron\.net\/paimai-(.*)\//);
+		let m = url.match(/https\:\/\/auction\.artron\.net\/paimai-([0-9a-zA-Z]*)\/?/);
 		if (!m || m.length != 2) return;
 
 		// 在页面中注入一段代码
@@ -33,9 +33,9 @@ async function onTargetCreated(target) {
 			let m = title.match(/【(.*)】/);
 			title = m && m.length == 2 && m[1] || title;
 			let filename = title + '.png';
-			let bigpic = await page.$('.ad-bigpic');
 
 			// 截图并保存
+			let bigpic = await page.$('.ad-bigpic');
 			await bigpic.screenshot({path: filename});
 			console.log('下载完成: ' + filename);
 
